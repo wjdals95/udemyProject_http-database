@@ -26,15 +26,25 @@ function App() {
       //   return response.json();
       // })
       // .then((data) => {
-      const transformedMovies = data.results.map((movieData) => {
-        return {
-          id: movieData.episode_id,
-          title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releasDate: movieData.release_date,
-        };
-      });
-      setMovies(transformedMovies);
+
+      const loadedMovies = [];
+      for (const key in data) {
+        loadedMovies.push({
+          id: key,
+          title: data[key].title,
+          openingText: data[key].openingText,
+          releasDate: data[key].releaseDate,
+        })
+      }
+      // const transformedMovies = data.results.map((movieData) => {
+      //   return {
+      //     id: movieData.episode_id,
+      //     title: movieData.title,
+      //     openingText: movieData.opening_crawl,
+      //     releasDate: movieData.release_date,
+      //   };
+      // });
+      setMovies(loadedMovies);
     } catch (error) {
       setError(error.message);
     }
@@ -59,8 +69,17 @@ function App() {
   //     releaseDate: '2021-05-19',
   //   },
   // ];
-  function addMovieHandler(movie) {
-    console.log(movie);
+  async function addMovieHandler(movie) {
+    const response = await fetch('https://react-http-a7dcb-default-rtdb.firebaseio.com/movies.json', {
+      //fetch는 기본적으로 GET방식이지만 POST로 바꾸기 위해서 아래처럼 입력.
+      method: 'POST',
+      body: JSON.stringify(movie),
+      headers:{
+        'Content-Type':'application/json'
+      }
+    });
+    const data = await response.json();
+    console.log(data);
   }
 
   let content = <p>Found no movies.</p>;
