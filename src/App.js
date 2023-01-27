@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 
 import MoviesList from "./components/MoviesList";
+import AddMovie from "./components/AddMovie";
 import "./App.css";
 
 function App() {
@@ -14,7 +15,7 @@ function App() {
     setError(null);
     //비동기화 코드로 변환
     try {
-      const response = await fetch("https://swapi.dev/api/films");
+      const response = await fetch("https://react-http-a7dcb-default-rtdb.firebaseio.com/movies.json");
       const data = await response.json();
 
       if (!response.ok) {
@@ -58,6 +59,10 @@ function App() {
   //     releaseDate: '2021-05-19',
   //   },
   // ];
+  function addMovieHandler(movie) {
+    console.log(movie);
+  }
+
   let content = <p>Found no movies.</p>;
   if (movies.length > 0) {
     content = <MoviesList movies={movies} />;
@@ -70,6 +75,9 @@ function App() {
   }
   return (
     <React.Fragment>
+      <section>
+        <AddMovie onAddMovie={addMovieHandler} />
+      </section>
       <section>
         <button onClick={fetchMoviesHandler}>Fetch Movies</button>
       </section>
