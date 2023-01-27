@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import MoviesList from "./components/MoviesList";
 import "./App.css";
@@ -6,27 +6,43 @@ import "./App.css";
 function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   //Fetch API를 사용하여 영화 Data가져오기
-  async function fetchMoviesHandler() {
+  const fetchMoviesHandler = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     //비동기화 코드로 변환
-    const response = await fetch("https://swapi.dev/api/films");
-    const data = await response.json();
-    // .then((response) => {
-    //   return response.json();
-    // })
-    // .then((data) => {
-    const transformedMovies = data.results.map((movieData) => {
-      return {
-        id: movieData.episode_id,
-        title: movieData.title,
-        openingText: movieData.opening_crawl,
-        releasDate: movieData.release_date,
-      };
-    });
-    setMovies(transformedMovies);
+    try {
+      const response = await fetch("https://swapi.dev/api/films");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Something went wrong!");
+      }
+      // then 사용
+      // .then((response) => {
+      //   return response.json();
+      // })
+      // .then((data) => {
+      const transformedMovies = data.results.map((movieData) => {
+        return {
+          id: movieData.episode_id,
+          title: movieData.title,
+          openingText: movieData.opening_crawl,
+          releasDate: movieData.release_date,
+        };
+      });
+      setMovies(transformedMovies);
+    } catch (error) {
+      setError(error.message);
+    }
     setIsLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchMoviesHandler();
+  }, [fetchMoviesHandler]);
 
   // const dummyMovies = [
   //   {
@@ -42,7 +58,16 @@ function App() {
   //     releaseDate: '2021-05-19',
   //   },
   // ];
-
+  let content = <p>Found no movies.</p>;
+  if (movies.length > 0) {
+    content = <MoviesList movies={movies} />;
+  }
+  if (error) {
+    content = <p>{error}</p>;
+  }
+  if (isLoading) {
+    content = <p>Loading...</p>;
+  }
   return (
     <React.Fragment>
       <section>
@@ -50,10 +75,12 @@ function App() {
       </section>
       <section>
         {/* 로딩중이라는 것을 하기위해 useState를 사용해서 isLoading이 false일때는
-        MoviesList가 나오고 true일때는 로딩중이라고 나온다. */}
+        MoviesList가 나오고 true일때는 로딩중이라고 나온다. 
         {!isLoading && movies.length > 0 && <MoviesList movies={movies} />}
-        {!isLoading && movies.length ===0 && <p>Found no movies...</p>}
-        {isLoading && <p>Loading...</p>}
+        {!isLoading && movies.length === 0 && !error &&<p>Found no movies...</p>}
+        {!isLoading && error && <p>{error}</p>}
+        {isLoading && <p>Loading...</p>} */}
+        {content}
       </section>
     </React.Fragment>
   );
